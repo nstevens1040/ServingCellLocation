@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ServingCellLocation</string>
+    <string name="title_location_permission">Location Permission</string>
+    <string name="text_location_permission">Just tap okay</string>
+    <string name="ok">Ok</string>
+    <string name="serving_cell_data">Serving Cell Data</string>
+</resources>
