@@ -2,11 +2,14 @@ package org.nanick.servingcelllocation;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.TextView;
+
+import org.greenrobot.eventbus.EventBus;
 
 public class MainActivity extends AppCompatActivity {
     public TextView dataCoords;
@@ -28,10 +31,12 @@ public class MainActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_main);
         textViews = new TextView[]{
+                (TextView) findViewById(R.id.signal),
                 (TextView) findViewById(R.id.mcc),
                 (TextView) findViewById(R.id.mnc),
                 (TextView) findViewById(R.id.lac),
                 (TextView) findViewById(R.id.cid),
+                (TextView) findViewById(R.id.enb),
                 (TextView) findViewById(R.id.lat),
                 (TextView) findViewById(R.id.lng)
         };

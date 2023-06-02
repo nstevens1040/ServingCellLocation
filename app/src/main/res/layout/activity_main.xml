@@ -33,6 +33,18 @@
 <!--        android:layout_height="0dp"-->
 <!--        />-->
     <TextView
+        android:id="@+id/signal"
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:includeFontPadding="false"
+        android:singleLine="false"
+        android:text=""
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/signal_label"
+        app:layout_constraintTop_toBottomOf="@+id/coords_title"
+        app:layout_constraintVertical_bias="0.0" />
+    <TextView
         android:id="@+id/mcc"
         android:layout_width="200dp"
         android:layout_height="40dp"
@@ -42,7 +54,7 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/mcc_label"
-        app:layout_constraintTop_toBottomOf="@+id/coords_title"
+        app:layout_constraintTop_toBottomOf="@+id/signal"
         app:layout_constraintVertical_bias="0.0" />
 
     <!--
@@ -91,13 +103,26 @@
         android:includeFontPadding="false"
         android:layout_height="40dp"
         />
+    <TextView
+        android:id="@+id/enb"
+        android:layout_width="200dp"
+        android:text=""
+        android:textSize="20sp"
+        app:layout_constraintTop_toBottomOf="@+id/cid"
+        tools:layout_editor_absoluteX="0dp"
+        app:layout_constraintStart_toEndOf="@+id/enb_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:layout_editor_absoluteY="3dp"
+        android:includeFontPadding="false"
+        android:layout_height="40dp"
+        />
 <!--    app:layout_constraintBottom_toTopOf="@+id/lat"-->
     <TextView
         android:id="@+id/lat"
         android:layout_width="200dp"
         android:text=""
         android:textSize="20sp"
-        app:layout_constraintTop_toBottomOf="@+id/cid"
+        app:layout_constraintTop_toBottomOf="@+id/enb"
         tools:layout_editor_absoluteX="0dp"
         app:layout_constraintStart_toEndOf="@+id/lat_label"
         app:layout_constraintEnd_toEndOf="parent"
@@ -124,6 +149,20 @@
 labels
 -->
     <TextView
+        android:id="@+id/signal_label"
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:includeFontPadding="false"
+        android:singleLine="false"
+        android:text="SIGNAL"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/signal"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/coords_title"
+        app:layout_constraintVertical_bias="0.0" />
+    <TextView
         android:id="@+id/mcc_label"
         android:layout_width="200dp"
         android:layout_height="40dp"
@@ -135,7 +174,7 @@ labels
         app:layout_constraintEnd_toStartOf="@+id/mcc"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/coords_title"
+        app:layout_constraintTop_toBottomOf="@+id/signal_label"
         app:layout_constraintVertical_bias="0.0" />
 
 <!--
@@ -182,6 +221,18 @@ app:layout_constraintBottom_toTopOf="@+id/mnc_label"
         app:layout_constraintTop_toBottomOf="@+id/lac_label" />
 <!--    app:layout_constraintBottom_toTopOf="@+id/lat_label"-->
     <TextView
+        android:id="@+id/enb_label"
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:text="PCI"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toStartOf="@+id/enb"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        android:includeFontPadding="false"
+        app:layout_constraintTop_toBottomOf="@+id/cid_label" />
+    <TextView
         android:id="@+id/lat_label"
         android:layout_width="200dp"
         android:layout_height="40dp"
@@ -192,7 +243,7 @@ app:layout_constraintBottom_toTopOf="@+id/mnc_label"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         android:includeFontPadding="false"
-        app:layout_constraintTop_toBottomOf="@+id/cid_label" />
+        app:layout_constraintTop_toBottomOf="@+id/enb_label" />
 <!--    app:layout_constraintBottom_toTopOf="@+id/lng_label"-->
     <TextView
         android:id="@+id/lng_label"

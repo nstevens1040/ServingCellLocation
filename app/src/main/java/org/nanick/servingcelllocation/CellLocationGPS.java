@@ -2,16 +2,33 @@ package org.nanick.servingcelllocation;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.telephony.CellIdentity;
+import android.telephony.CellIdentityLte;
+import android.telephony.CellInfo;
 import android.telephony.CellLocation;
+import android.telephony.CellSignalStrength;
+import android.telephony.CellSignalStrengthLte;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 import android.widget.TextView;
+import android.view.View;
+import android.app.Activity;
+import androidx.core.app.ActivityCompat;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.List;
 
 public class CellLocationGPS {
 
@@ -35,6 +52,7 @@ public class CellLocationGPS {
 
     @SuppressLint("MissingPermission")
     public void start() {
+        EventBus.getDefault().register(this);
         telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
         gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -45,50 +63,83 @@ public class CellLocationGPS {
     }
 
     public void stop() {
+        EventBus.getDefault().unregister(this);
         telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
         locationManager.removeUpdates(locationListener);
+    }
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(EnbEvent event) {
+        TextView[] value = event.getOo();
     }
 
     private class PhoneStateListenerImpl extends PhoneStateListener {
         public TextView[] datac;
-        public PhoneStateListenerImpl(TextView[] dc){
+        public TelephonyManager.CellInfoCallback cellInfoCallback;
+
+        public PhoneStateListenerImpl(TextView[] dc) {
             this.datac = dc;
         }
+
+        @SuppressLint("MissingPermission")
         @Override
         public void onSignalStrengthsChanged(SignalStrength signalStrength) {
             super.onSignalStrengthsChanged(signalStrength);
+            EnbEvent msgEvent = new EnbEvent();
+            msgEvent.tv = this.datac;
+            EventBus.getDefault().postSticky(msgEvent);
             @SuppressLint("MissingPermission") CellLocation cellLocation = telephonyManager.getCellLocation();
-            if (cellLocation instanceof android.telephony.gsm.GsmCellLocation) {
-                android.telephony.gsm.GsmCellLocation gsmCellLocation = (android.telephony.gsm.GsmCellLocation) cellLocation;
-                int cid = gsmCellLocation.getCid();
-                int lac = gsmCellLocation.getLac();
-                String networkOperator = telephonyManager.getNetworkOperator();
-                if (networkOperator != null && networkOperator.length() >= 3) {
-                    int mcc = Integer.parseInt(networkOperator.substring(0, 3));
-                    int mnc = Integer.parseInt(networkOperator.substring(3));
-                    Location location = getLastKnownLocation();
-                    if (location != null) {
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-                        Log.i("CellLocationGPS",
-                                String.format(
-                                        "Cell location: mcc=%d, mnc=%d, lac=%d, cid=%d, latitude=%f, longitude=%f",
-                                        mcc, mnc, lac, cid, latitude, longitude));
-                        String dataString = "Cell location:\n  mcc: " + mcc + ",\n  mnc: " + mnc + ",\n  lac: " + lac + ",\n  cid: " + cid + ",\n  lat: " + latitude + ",\n  lng: " + longitude + "\n";
-                        this.datac[0].setText(mcc+"");
-                        this.datac[1].setText(mnc+"");
-                        this.datac[2].setText(lac+"");
-                        this.datac[3].setText(cid+"");
-                        this.datac[4].setText(latitude+"");
-                        this.datac[5].setText(longitude+"");
-                    } else {
-                        Log.e("CellLocationGPS", "Unable to get location.");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+
+                cellInfoCallback = new TelephonyManager.CellInfoCallback() {
+                    @Override
+                    public void onCellInfo(List<CellInfo> cellInfo) {
+                        EnbEvent msg = EventBus.getDefault().getStickyEvent(EnbEvent.class);
+                        TextView[] datac = msg.tv;
+                        CellIdentityLte lte = (CellIdentityLte)cellInfo.get(0).getCellIdentity();
+                        String pci = lte.getPci()+"";
+                        if (cellLocation instanceof GsmCellLocation) {
+                            GsmCellLocation gsmCellLocation = (GsmCellLocation) cellLocation;
+
+                            double signalDbm = 0.0;
+                            int cid = gsmCellLocation.getCid();
+                            int lac = gsmCellLocation.getLac();
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                signalDbm = signalStrength.getCellSignalStrengths().get(0).getDbm();
+                            }
+                            String networkOperator = telephonyManager.getNetworkOperator();
+                            if (networkOperator != null && networkOperator.length() >= 3) {
+                                int mcc = Integer.parseInt(networkOperator.substring(0, 3));
+                                int mnc = Integer.parseInt(networkOperator.substring(3));
+                                Location location = getLastKnownLocation();
+                                if (location != null) {
+                                    double latitude = location.getLatitude();
+                                    double longitude = location.getLongitude();
+                                    String dataString = "Cell location:\n  signal: " + signalDbm + " dBm\n  mcc: " + mcc + ",\n  mnc: " + mnc + ",\n  lac: " + lac + ",\n  cid: " + cid + ",\n  lat: " + latitude + ",\n  lng: " + longitude + "\n";
+                                    Log.i("CellLocationGPS",dataString);
+
+                                    datac[0].setText(signalDbm+" dBm");
+                                    datac[1].setText(mcc+"");
+                                    datac[2].setText(mnc+"");
+                                    datac[3].setText(lac+"");
+                                    datac[4].setText(cid+"");
+                                    datac[5].setText(pci);
+                                    datac[6].setText(latitude+"");
+                                    datac[7].setText(longitude+"");
+                                } else {
+                                    Log.e("CellLocationGPS", "Unable to get location.");
+                                }
+                            } else {
+                                Log.e("CellLocationGPS", "Invalid network operator.");
+                            }
+                        } else {
+                            Log.e("CellLocationGPS", "Unsupported cell location type.");
+                        }
+
                     }
-                } else {
-                    Log.e("CellLocationGPS", "Invalid network operator.");
-                }
-            } else {
-                Log.e("CellLocationGPS", "Unsupported cell location type.");
+                };
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                telephonyManager.requestCellInfoUpdate(context.getMainExecutor(), cellInfoCallback);
             }
         }
 
